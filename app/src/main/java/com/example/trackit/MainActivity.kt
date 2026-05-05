@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -20,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -30,6 +30,12 @@ import com.example.trackit.ui.inventory.AddItemScreen
 import com.example.trackit.ui.inventory.InventoryScreen
 import com.example.trackit.ui.inventory.LocationScreen
 import com.example.trackit.ui.theme.TrackITTheme
+
+sealed class Screen(val route: String, val resourceId: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
+    object Inventory : Screen("inventory", R.string.home_tab, Icons.Default.Home)
+    object Locations : Screen("locations", R.string.locations_title, Icons.Default.LocationOn)
+    object Settings : Screen("settings", R.string.settings_title, Icons.Default.Settings)
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,60 +55,40 @@ fun TrackItApp() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
+    val items = listOf(
+        Screen.Inventory,
+        Screen.Locations,
+        Screen.Settings
+    )
+
     Scaffold(
         bottomBar = {
             NavigationBar {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = null) },
-                    label = { Text("Home") },
-                    selected = currentDestination?.hierarchy?.any { it.route == "inventory" } == true,
-                    onClick = {
-                        navController.navigate("inventory") {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
+                items.forEach { screen ->
+                    NavigationBarItem(
+                        icon = { Icon(screen.icon, contentDescription = null) },
+                        label = { Text(stringResource(screen.resourceId)) },
+                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                        onClick = {
+                            navController.navigate(screen.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
                             }
-                            launchSingleTop = true
-                            restoreState = true
                         }
-                    }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
-                    label = { Text("Locations") },
-                    selected = currentDestination?.hierarchy?.any { it.route == "locations" } == true,
-                    onClick = {
-                        navController.navigate("locations") {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text("Settings") },
-                    selected = currentDestination?.hierarchy?.any { it.route == "settings" } == true,
-                    onClick = {
-                        navController.navigate("settings") {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                )
+                    )
+                }
             }
         }
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "inventory",
+            startDestination = Screen.Inventory.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("inventory") {
+            composable(Screen.Inventory.route) {
                 InventoryScreen(
                     onNavigateToAddItem = { navController.navigate("add_item") }
                 )
@@ -113,16 +99,14 @@ fun TrackItApp() {
                     onNavigateUp = { navController.navigateUp() }
                 )
             }
-            composable("locations") {
+            composable(Screen.Locations.route) {
                 LocationScreen()
             }
-            composable("settings") {
-                // Placeholder Settings Screen
+            composable(Screen.Settings.route) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-                    Text("Settings Screen (Coming Soon)")
+                    Text(stringResource(R.string.settings_title) + " (Coming Soon)")
                 }
             }
         }
     }
 }
-

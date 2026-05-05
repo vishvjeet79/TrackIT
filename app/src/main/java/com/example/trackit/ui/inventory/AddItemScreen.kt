@@ -26,6 +26,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -34,6 +35,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.trackit.R
 import com.example.trackit.ui.AppViewModelProvider
 import java.io.File
 import java.text.SimpleDateFormat
@@ -72,7 +74,8 @@ fun AddItemScreen(
     
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
-    var expiryDateLabel by rememberSaveable { mutableStateOf("Select Expiry Date") }
+    var expiryDateLabel by rememberSaveable { mutableStateOf("") }
+    val defaultExpiryLabel = stringResource(R.string.select_date)
 
     var nameExpanded by rememberSaveable { mutableStateOf(false) }
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -99,12 +102,12 @@ fun AddItemScreen(
                         expiryDateLabel = sdf.format(Date(it))
                     }
                 }) {
-                    Text("OK")
+                    Text(stringResource(android.R.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         ) {
@@ -116,12 +119,12 @@ fun AddItemScreen(
         var newCategoryName by rememberSaveable { mutableStateOf("") }
         AlertDialog(
             onDismissRequest = { showAddCategoryDialog = false },
-            title = { Text("Add New Category") },
+            title = { Text(stringResource(R.string.add_category)) },
             text = {
                 OutlinedTextField(
                     value = newCategoryName,
                     onValueChange = { newCategoryName = it },
-                    label = { Text("Category Name") },
+                    label = { Text(stringResource(R.string.category)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -136,12 +139,12 @@ fun AddItemScreen(
                         }
                     }
                 ) {
-                    Text("Add")
+                    Text(stringResource(R.string.add))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddCategoryDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -151,12 +154,12 @@ fun AddItemScreen(
         var newLocationName by rememberSaveable { mutableStateOf("") }
         AlertDialog(
             onDismissRequest = { showAddLocationDialog = false },
-            title = { Text("Add New Location") },
+            title = { Text(stringResource(R.string.add_location)) },
             text = {
                 OutlinedTextField(
                     value = newLocationName,
                     onValueChange = { newLocationName = it },
-                    label = { Text("Location Name") },
+                    label = { Text(stringResource(R.string.location)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -171,12 +174,12 @@ fun AddItemScreen(
                         }
                     }
                 ) {
-                    Text("Add")
+                    Text(stringResource(R.string.add))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddLocationDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -185,10 +188,10 @@ fun AddItemScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Add Item") },
+                title = { Text(stringResource(R.string.add_item_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -239,7 +242,7 @@ fun AddItemScreen(
                         }) {
                             Icon(Icons.Default.PhotoCamera, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
-                            Text("Take Photo")
+                            Text(stringResource(R.string.take_photo))
                         }
                     }
                 }
@@ -255,7 +258,7 @@ fun AddItemScreen(
                             name = it
                             nameExpanded = it.isNotBlank()
                         },
-                        label = { Text("Item Name") },
+                        label = { Text(stringResource(R.string.item_name)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .menuAnchor(MenuAnchorType.PrimaryEditable),
@@ -299,7 +302,7 @@ fun AddItemScreen(
                 OutlinedTextField(
                     value = quantity,
                     onValueChange = { if (it.all { char -> char.isDigit() }) quantity = it },
-                    label = { Text("Quantity") },
+                    label = { Text(stringResource(R.string.quantity)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     isError = quantity.isNotEmpty() && quantity.toIntOrNull() == null,
@@ -319,7 +322,7 @@ fun AddItemScreen(
                             value = category,
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text("Category") },
+                            label = { Text(stringResource(R.string.category)) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
                             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
@@ -344,7 +347,7 @@ fun AddItemScreen(
                         onClick = { showAddCategoryDialog = true },
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Category")
+                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_category))
                     }
                 }
 
@@ -360,7 +363,7 @@ fun AddItemScreen(
                         OutlinedTextField(
                             value = location,
                             onValueChange = { location = it },
-                            label = { Text("Location") },
+                            label = { Text(stringResource(R.string.location)) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = locationExpanded) },
                             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryEditable).fillMaxWidth(),
                             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
@@ -392,14 +395,14 @@ fun AddItemScreen(
                         onClick = { showAddLocationDialog = true },
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Location")
+                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_location))
                     }
                 }
 
                 OutlinedTextField(
-                    value = expiryDateLabel,
+                    value = if (expiryDateLabel.isEmpty()) defaultExpiryLabel else expiryDateLabel,
                     onValueChange = { },
-                    label = { Text("Expiry Date") },
+                    label = { Text(stringResource(R.string.expiry_date)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { showDatePicker = true },
@@ -407,7 +410,7 @@ fun AddItemScreen(
                     readOnly = true,
                     trailingIcon = {
                         IconButton(onClick = { showDatePicker = true }) {
-                            Icon(Icons.Default.CalendarToday, contentDescription = "Select Date")
+                            Icon(Icons.Default.CalendarToday, contentDescription = stringResource(R.string.select_date))
                         }
                     },
                     colors = OutlinedTextFieldDefaults.colors(
@@ -432,7 +435,7 @@ fun AddItemScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = name.isNotBlank() && quantity.isNotBlank()
                 ) {
-                    Text("Save Item")
+                    Text(stringResource(R.string.save_item))
                 }
             }
         }
@@ -506,7 +509,7 @@ fun CameraView(
             ) {
                 Icon(
                     imageVector = Icons.Default.PhotoCamera,
-                    contentDescription = "Take Photo",
+                    contentDescription = stringResource(R.string.take_photo),
                     modifier = Modifier.size(48.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -519,7 +522,7 @@ fun CameraView(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.back),
                 tint = MaterialTheme.colorScheme.onSurface
             )
         }

@@ -19,12 +19,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.trackit.R
 import com.example.trackit.data.Category
 import com.example.trackit.data.InventoryItem
 import com.example.trackit.data.Location
@@ -77,8 +79,8 @@ fun InventoryScreenContent(
 ) {
     var isSearchActive by rememberSaveable { mutableStateOf(false) }
 
-    var itemToConsume by rememberSaveable { mutableStateOf<Int?>(null) }
-    var itemToEdit by rememberSaveable { mutableStateOf<Int?>(null) }
+    var itemToConsumeId by rememberSaveable { mutableStateOf<Int?>(null) }
+    var itemToEditId by rememberSaveable { mutableStateOf<Int?>(null) }
     
     var selectedItems by rememberSaveable { mutableStateOf(setOf<Int>()) }
     val isInSelectionMode by remember { derivedStateOf { selectedItems.isNotEmpty() } }
@@ -98,15 +100,15 @@ fun InventoryScreenContent(
                 TopAppBar(
                     title = {
                         if (isInSelectionMode) {
-                            Text("${selectedItems.size} selected")
+                            Text(stringResource(R.string.selected_count, selectedItems.size))
                         } else {
-                            Text("TrackIT Inventory")
+                            Text(stringResource(R.string.inventory_title))
                         }
                     },
                     navigationIcon = {
                         if (isInSelectionMode) {
                             IconButton(onClick = { selectedItems = emptySet() }) {
-                                Icon(Icons.Default.Close, contentDescription = "Clear Selection")
+                                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.clear_selection))
                             }
                         }
                     },
@@ -117,11 +119,11 @@ fun InventoryScreenContent(
                                 onDeleteItems(itemsToDelete)
                                 selectedItems = emptySet()
                             }) {
-                                Icon(Icons.Default.Delete, contentDescription = "Delete Selected")
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete_selected))
                             }
                         } else {
                             IconButton(onClick = { isSearchActive = true }) {
-                                Icon(Icons.Default.Search, contentDescription = "Search")
+                                Icon(Icons.Default.Search, contentDescription = stringResource(R.string.search))
                             }
                         }
                     }
@@ -137,7 +139,7 @@ fun InventoryScreenContent(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Add Item"
+                        contentDescription = stringResource(R.string.add_item_title)
                     )
                 }
             }
@@ -161,37 +163,37 @@ fun InventoryScreenContent(
                 }
             },
             onDelete = { onDeleteItem(it) },
-            onConsume = { itemToConsume = it.id },
-            onEdit = { itemToEdit = it.id },
+            onConsume = { itemToConsumeId = it.id },
+            onEdit = { itemToEditId = it.id },
             modifier = modifier.padding(innerPadding)
         )
 
-        itemToConsume?.let { id ->
+        itemToConsumeId?.let { id ->
             uiState.itemList.find { it.id == id }?.let { item ->
                 ConsumeDialog(
                     item = item,
-                    onDismiss = { itemToConsume = null },
+                    onDismiss = { itemToConsumeId = null },
                     onConfirm = { amount ->
                         onConsumeItem(item, amount)
-                        itemToConsume = null
+                        itemToConsumeId = null
                     }
                 )
-            }
+            } ?: run { itemToConsumeId = null }
         }
 
-        itemToEdit?.let { id ->
+        itemToEditId?.let { id ->
             uiState.itemList.find { it.id == id }?.let { item ->
                 EditItemDialog(
                     item = item,
-                    onDismiss = { itemToEdit = null },
+                    onDismiss = { itemToEditId = null },
                     onConfirm = { updatedItem ->
                         onUpdateItem(updatedItem)
-                        itemToEdit = null
+                        itemToEditId = null
                     },
                     categoryList = categoryList,
                     locationList = locationList
                 )
-            }
+            } ?: run { itemToEditId = null }
         }
     }
 }
@@ -218,7 +220,7 @@ fun SearchTopBar(
             TextField(
                 value = searchQuery,
                 onValueChange = onSearchQueryChange,
-                placeholder = { Text("Search by name, location, or category...") },
+                placeholder = { Text(stringResource(R.string.search_placeholder)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
@@ -238,13 +240,13 @@ fun SearchTopBar(
         },
         navigationIcon = {
             IconButton(onClick = onCloseClick) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
             }
         },
         actions = {
             if (searchQuery.isNotEmpty()) {
                 IconButton(onClick = { onSearchQueryChange("") }) {
-                    Icon(Icons.Default.Clear, contentDescription = "Clear")
+                    Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.clear))
                 }
             }
         }
@@ -280,12 +282,12 @@ fun EditItemDialog(
                     expiryDate = datePickerState.selectedDateMillis
                     showDatePicker = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(android.R.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         ) {
@@ -295,20 +297,20 @@ fun EditItemDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Edit Item") },
+        title = { Text(stringResource(R.string.edit_item_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Item Name") },
+                    label = { Text(stringResource(R.string.item_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = quantity,
-                    onValueChange = { quantity = it },
-                    label = { Text("Quantity") },
+                    onValueChange = { if (it.all { char -> char.isDigit() }) quantity = it },
+                    label = { Text(stringResource(R.string.quantity)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
@@ -323,7 +325,7 @@ fun EditItemDialog(
                         value = category,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Category") },
+                        label = { Text(stringResource(R.string.category)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         modifier = Modifier
                             .menuAnchor(MenuAnchorType.PrimaryNotEditable)
@@ -354,7 +356,7 @@ fun EditItemDialog(
                     OutlinedTextField(
                         value = location,
                         onValueChange = { location = it },
-                        label = { Text("Location") },
+                        label = { Text(stringResource(R.string.location)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = locationExpanded) },
                         modifier = Modifier
                             .menuAnchor(MenuAnchorType.PrimaryEditable)
@@ -385,12 +387,12 @@ fun EditItemDialog(
                 }
                 
                 val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                val dateText = expiryDate?.let { sdf.format(Date(it)) } ?: "No expiry date"
+                val dateText = expiryDate?.let { sdf.format(Date(it)) } ?: stringResource(R.string.no_expiry)
                 
                 OutlinedTextField(
                     value = dateText,
                     onValueChange = { },
-                    label = { Text("Expiry Date") },
+                    label = { Text(stringResource(R.string.expiry_date)) },
                     readOnly = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -398,7 +400,7 @@ fun EditItemDialog(
                     enabled = true,
                     trailingIcon = {
                         IconButton(onClick = { showDatePicker = true }) {
-                            Icon(Icons.Default.CalendarToday, contentDescription = "Select Date")
+                            Icon(Icons.Default.CalendarToday, contentDescription = stringResource(R.string.select_date))
                         }
                     },
                     colors = OutlinedTextFieldDefaults.colors(
@@ -425,12 +427,12 @@ fun EditItemDialog(
                     }
                 }
             ) {
-                Text("Save")
+                Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )
@@ -446,17 +448,17 @@ fun ConsumeDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Consume ${item.name}") },
+        title = { Text(stringResource(R.string.consume_title, item.name)) },
         text = {
             Column {
-                Text("Available: ${item.quantity}")
+                Text(stringResource(R.string.available_quantity, item.quantity))
                 Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = consumeAmount,
-                    onValueChange = { consumeAmount = it },
-                    label = { Text("Amount to consume") },
+                    onValueChange = { if (it.all { char -> char.isDigit() }) consumeAmount = it },
+                    label = { Text(stringResource(R.string.amount_to_consume)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    isError = consumeAmount.isNotEmpty() && consumeAmount.toIntOrNull() == null,
+                    isError = consumeAmount.isNotEmpty() && (consumeAmount.toIntOrNull() ?: 0) > item.quantity,
                     singleLine = true
                 )
             }
@@ -470,12 +472,12 @@ fun ConsumeDialog(
                     }
                 }
             ) {
-                Text("Confirm")
+                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )
@@ -495,7 +497,7 @@ private fun InventoryBody(
     if (itemList.isEmpty()) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
-                text = "No items in inventory",
+                text = stringResource(R.string.no_items),
                 style = MaterialTheme.typography.titleLarge
             )
         }
@@ -562,7 +564,7 @@ fun InventoryItemCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = item.name, style = MaterialTheme.typography.titleMedium)
                 Text(
-                    text = "Quantity: ${item.quantity}",
+                    text = stringResource(R.string.quantity) + ": ${item.quantity}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.secondary
                 )

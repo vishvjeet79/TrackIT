@@ -27,13 +27,6 @@ abstract class InventoryDatabase : RoomDatabase() {
             }
         }
 
-        private class DatabaseCallback : Callback() {
-            override fun onCreate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
-                super.onCreate(db)
-                // We can't use the DAO here directly easily because the DB is still being created
-                // But we could insert initial categories if we wanted via SQL
-                // Or handle it in the Repository/ViewModel on first run.
-            }
-        }
+        private class DatabaseCallback : Callback()
     }
 }

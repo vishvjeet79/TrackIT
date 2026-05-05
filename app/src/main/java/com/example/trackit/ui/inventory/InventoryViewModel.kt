@@ -95,7 +95,12 @@ class InventoryViewModel(private val repository: InventoryRepository) : ViewMode
     fun consumeItem(item: InventoryItem, amount: Int) {
         viewModelScope.launch {
             if (item.quantity >= amount) {
-                repository.updateItem(item.copy(quantity = item.quantity - amount))
+                val updatedItem = item.copy(quantity = item.quantity - amount)
+                if (updatedItem.quantity == 0) {
+                    repository.deleteItem(item)
+                } else {
+                    repository.updateItem(updatedItem)
+                }
             }
         }
     }

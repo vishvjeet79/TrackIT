@@ -16,9 +16,11 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.trackit.R
 import com.example.trackit.data.Location
 import com.example.trackit.ui.AppViewModelProvider
 
@@ -36,7 +38,7 @@ fun LocationScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Locations") }
+                title = { Text(stringResource(R.string.locations_title)) }
             )
         },
         floatingActionButton = {
@@ -44,7 +46,7 @@ fun LocationScreen(
                 preselectedParentForAdd = null
                 showAddLocationDialog = true 
             }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Location")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_location))
             }
         }
     ) { innerPadding ->
@@ -63,8 +65,8 @@ fun LocationScreen(
         if (locationToDelete != null) {
             AlertDialog(
                 onDismissRequest = { locationToDelete = null },
-                title = { Text("Delete Location") },
-                text = { Text("Are you sure you want to delete '${locationToDelete?.name}'?") },
+                title = { Text(stringResource(R.string.delete)) },
+                text = { Text(stringResource(R.string.delete_location_confirm, locationToDelete?.name ?: "")) },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -72,12 +74,12 @@ fun LocationScreen(
                             locationToDelete = null
                         }
                     ) {
-                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { locationToDelete = null }) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
                 }
             )
@@ -93,13 +95,13 @@ fun LocationScreen(
                     showAddLocationDialog = false
                     preselectedParentForAdd = null
                 },
-                title = { Text("Add New Location") },
+                title = { Text(stringResource(R.string.add_location)) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = newLocationName,
                             onValueChange = { newLocationName = it },
-                            label = { Text("Location Name") },
+                            label = { Text(stringResource(R.string.location)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -110,10 +112,10 @@ fun LocationScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             OutlinedTextField(
-                                value = selectedParent ?: "None (Main Location)",
+                                value = selectedParent ?: stringResource(R.string.none_main_location),
                                 onValueChange = {},
                                 readOnly = true,
-                                label = { Text("Parent Location") },
+                                label = { Text(stringResource(R.string.parent_location)) },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
                                 modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
                                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
@@ -123,7 +125,7 @@ fun LocationScreen(
                                 onDismissRequest = { parentExpanded = false }
                             ) {
                                 DropdownMenuItem(
-                                    text = { Text("None (Main Location)") },
+                                    text = { Text(stringResource(R.string.none_main_location)) },
                                     onClick = {
                                         selectedParent = null
                                         parentExpanded = false
@@ -151,12 +153,12 @@ fun LocationScreen(
                             }
                         }
                     ) {
-                        Text("Add")
+                        Text(stringResource(R.string.add))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showAddLocationDialog = false }) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
                 }
             )
@@ -173,7 +175,7 @@ fun LocationList(
 ) {
     if (locations.isEmpty()) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No locations added yet", style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.no_locations), style = MaterialTheme.typography.bodyLarge)
         }
     } else {
         val rootLocations = remember(locations) { locations.filter { it.parentName == null } }
@@ -257,7 +259,7 @@ fun LocationItem(
 
             if (location.parentName == null) {
                 IconButton(onClick = { onAddClick?.invoke() }) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Sub-location")
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_location))
                 }
                 if (hasSublocations) {
                     Icon(
@@ -271,7 +273,7 @@ fun LocationItem(
                 IconButton(onClick = { onDeleteClick?.invoke() }) {
                     Icon(
                         imageVector = Icons.Default.Remove,
-                        contentDescription = "Delete Sub-location",
+                        contentDescription = stringResource(R.string.delete),
                         tint = MaterialTheme.colorScheme.error
                     )
                 }
