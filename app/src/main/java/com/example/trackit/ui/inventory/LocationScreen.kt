@@ -28,24 +28,26 @@ import com.example.trackit.ui.AppViewModelProvider
 @Composable
 fun LocationScreen(
     modifier: Modifier = Modifier,
-    viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val locationList by viewModel.locations.collectAsStateWithLifecycle()
-    var showAddLocationDialog by rememberSaveable { mutableStateOf(false) }
+    var showAddLocationDialog by rememberSaveable { mutableStateOf(value = false) }
     var preselectedParentForAdd by rememberSaveable { mutableStateOf<String?>(null) }
     var locationToDelete by remember { mutableStateOf<Location?>(null) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.locations_title)) }
+                title = { Text(stringResource(R.string.locations_title)) },
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { 
-                preselectedParentForAdd = null
-                showAddLocationDialog = true 
-            }) {
+            FloatingActionButton(
+                onClick = {
+                    preselectedParentForAdd = null
+                    showAddLocationDialog = true
+                },
+            ) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_location))
             }
         }
@@ -88,7 +90,7 @@ fun LocationScreen(
         if (showAddLocationDialog) {
             var newLocationName by rememberSaveable { mutableStateOf("") }
             var selectedParent by rememberSaveable { mutableStateOf(preselectedParentForAdd) }
-            var parentExpanded by rememberSaveable { mutableStateOf(false) }
+            var parentExpanded by rememberSaveable { mutableStateOf(value = false) }
 
             AlertDialog(
                 onDismissRequest = { 
@@ -168,10 +170,10 @@ fun LocationScreen(
 
 @Composable
 fun LocationList(
+    modifier: Modifier = Modifier,
     locations: List<Location>,
     onAddSublocation: (Location) -> Unit,
     onDeleteLocation: (Location) -> Unit,
-    modifier: Modifier = Modifier
 ) {
     if (locations.isEmpty()) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -179,7 +181,9 @@ fun LocationList(
         }
     } else {
         val rootLocations = remember(locations) { locations.filter { it.parentName == null } }
-        val subLocationsMap = remember(locations) { locations.filter { it.parentName != null }.groupBy { it.parentName } }
+        val subLocationsMap = remember(locations) {
+            locations.asSequence().filter { it.parentName != null }.groupBy { it.parentName }
+        }
         var expandedLocations by rememberSaveable { mutableStateOf(setOf<String>()) }
 
         LazyColumn(

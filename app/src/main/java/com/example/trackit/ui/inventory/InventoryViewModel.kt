@@ -21,7 +21,7 @@ class InventoryViewModel(private val repository: InventoryRepository) : ViewMode
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-                initialValue = listOf()
+                initialValue = listOf(),
             )
 
     val locations: StateFlow<List<Location>> =
@@ -29,7 +29,7 @@ class InventoryViewModel(private val repository: InventoryRepository) : ViewMode
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-                initialValue = listOf()
+                initialValue = listOf(),
             )
 
     val allItems: StateFlow<List<InventoryItem>> =
@@ -37,7 +37,7 @@ class InventoryViewModel(private val repository: InventoryRepository) : ViewMode
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-                initialValue = listOf()
+                initialValue = listOf(),
             )
 
     private val _searchQuery = MutableStateFlow("")
@@ -58,7 +58,7 @@ class InventoryViewModel(private val repository: InventoryRepository) : ViewMode
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-            initialValue = InventoryUiState()
+            initialValue = InventoryUiState(),
         )
 
     fun onSearchQueryChange(newQuery: String) {
@@ -74,7 +74,7 @@ class InventoryViewModel(private val repository: InventoryRepository) : ViewMode
                     imagePath = imagePath,
                     location = location,
                     category = category,
-                    expiryDate = expiryDate
+                    expiryDate = expiryDate,
                 )
             )
         }

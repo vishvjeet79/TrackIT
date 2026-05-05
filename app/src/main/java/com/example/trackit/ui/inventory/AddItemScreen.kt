@@ -48,7 +48,7 @@ fun AddItemScreen(
     navigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val context = LocalContext.current
     
@@ -70,21 +70,21 @@ fun AddItemScreen(
     }
 
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
-    var showCamera by rememberSaveable { mutableStateOf(false) }
+    var showCamera by rememberSaveable { mutableStateOf(value = false) }
     
-    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var showDatePicker by rememberSaveable { mutableStateOf(value = false) }
     val datePickerState = rememberDatePickerState()
     var expiryDateLabel by rememberSaveable { mutableStateOf("") }
     val defaultExpiryLabel = stringResource(R.string.select_date)
 
-    var nameExpanded by rememberSaveable { mutableStateOf(false) }
-    var expanded by rememberSaveable { mutableStateOf(false) }
-    var locationExpanded by rememberSaveable { mutableStateOf(false) }
-    var showAddCategoryDialog by rememberSaveable { mutableStateOf(false) }
-    var showAddLocationDialog by rememberSaveable { mutableStateOf(false) }
+    var nameExpanded by rememberSaveable { mutableStateOf(value = false) }
+    var expanded by rememberSaveable { mutableStateOf(value = false) }
+    var locationExpanded by rememberSaveable { mutableStateOf(value = false) }
+    var showAddCategoryDialog by rememberSaveable { mutableStateOf(value = false) }
+    var showAddLocationDialog by rememberSaveable { mutableStateOf(value = false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
+        contract = ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
         if (isGranted) {
             showCamera = true
@@ -95,13 +95,15 @@ fun AddItemScreen(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(onClick = {
-                    showDatePicker = false
-                    datePickerState.selectedDateMillis?.let {
-                        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                        expiryDateLabel = sdf.format(Date(it))
-                    }
-                }) {
+                TextButton(
+                    onClick = {
+                        showDatePicker = false
+                        datePickerState.selectedDateMillis?.let {
+                            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                            expiryDateLabel = sdf.format(Date(it))
+                        }
+                    },
+                ) {
                     Text(stringResource(android.R.string.ok))
                 }
             },
@@ -232,14 +234,16 @@ fun AddItemScreen(
                             .padding(8.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Button(onClick = {
-                            val permissionCheckResult = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
-                            if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
-                                showCamera = true
-                            } else {
-                                permissionLauncher.launch(Manifest.permission.CAMERA)
-                            }
-                        }) {
+                        Button(
+                            onClick = {
+                                val permissionCheckResult = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                                if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+                                    showCamera = true
+                                } else {
+                                    permissionLauncher.launch(Manifest.permission.CAMERA)
+                                }
+                            },
+                        ) {
                             Icon(Icons.Default.PhotoCamera, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
                             Text(stringResource(R.string.take_photo))
@@ -265,9 +269,9 @@ fun AddItemScreen(
                         singleLine = true
                     )
 
-                    val filteredItems = allItems.filter {
+                    val filteredItems = allItems.asSequence().filter {
                         it.name.contains(name, ignoreCase = true)
-                    }.distinctBy { it.name }
+                    }.distinctBy { it.name }.toList()
 
                     if (filteredItems.isNotEmpty() && name.isNotBlank()) {
                         ExposedDropdownMenu(
@@ -305,7 +309,7 @@ fun AddItemScreen(
                     label = { Text(stringResource(R.string.quantity)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    isError = quantity.isNotEmpty() && quantity.toIntOrNull() == null,
+                    isError = quantity.isNotEmpty() && (quantity.toIntOrNull() == null),
                     singleLine = true
                 )
 
@@ -400,7 +404,7 @@ fun AddItemScreen(
                 }
 
                 OutlinedTextField(
-                    value = if (expiryDateLabel.isEmpty()) defaultExpiryLabel else expiryDateLabel,
+                    value = expiryDateLabel.ifEmpty { defaultExpiryLabel },
                     onValueChange = { },
                     label = { Text(stringResource(R.string.expiry_date)) },
                     modifier = Modifier

@@ -40,7 +40,7 @@ import java.util.*
 fun InventoryScreen(
     onNavigateToAddItem: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.inventoryUiState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
@@ -58,7 +58,7 @@ fun InventoryScreen(
         onConsumeItem = viewModel::consumeItem,
         onUpdateItem = viewModel::updateItem,
         onNavigateToAddItem = onNavigateToAddItem,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -77,7 +77,7 @@ fun InventoryScreenContent(
     onNavigateToAddItem: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var isSearchActive by rememberSaveable { mutableStateOf(false) }
+    var isSearchActive by rememberSaveable { mutableStateOf(value = false) }
 
     var itemToConsumeId by rememberSaveable { mutableStateOf<Int?>(null) }
     var itemToEditId by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -91,11 +91,10 @@ fun InventoryScreenContent(
                 SearchTopBar(
                     searchQuery = searchQuery,
                     onSearchQueryChange = onSearchQueryChange,
-                    onCloseClick = {
-                        onSearchQueryChange("")
-                        isSearchActive = false
-                    }
-                )
+                ) {
+                    onSearchQueryChange("")
+                    isSearchActive = false
+                }
             } else {
                 TopAppBar(
                     title = {
@@ -173,11 +172,10 @@ fun InventoryScreenContent(
                 ConsumeDialog(
                     item = item,
                     onDismiss = { itemToConsumeId = null },
-                    onConfirm = { amount ->
-                        onConsumeItem(item, amount)
-                        itemToConsumeId = null
-                    }
-                )
+                ) { amount ->
+                    onConsumeItem(item, amount)
+                    itemToConsumeId = null
+                }
             } ?: run { itemToConsumeId = null }
         }
 
@@ -268,15 +266,15 @@ fun EditItemDialog(
     var quantity by rememberSaveable { mutableStateOf(item.quantity.toString()) }
     var expiryDate by rememberSaveable { mutableStateOf(item.expiryDate) }
     
-    var expanded by rememberSaveable { mutableStateOf(false) }
-    var locationExpanded by rememberSaveable { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(value = false) }
+    var locationExpanded by rememberSaveable { mutableStateOf(value = false) }
     
-    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var showDatePicker by rememberSaveable { mutableStateOf(value = false) }
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = item.expiryDate)
 
     if (showDatePicker) {
         DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
+            onDismissRequest = onDismiss,
             confirmButton = {
                 TextButton(onClick = {
                     expiryDate = datePickerState.selectedDateMillis
@@ -313,7 +311,7 @@ fun EditItemDialog(
                     label = { Text(stringResource(R.string.quantity)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
                 
                 ExposedDropdownMenuBox(
@@ -458,7 +456,7 @@ fun ConsumeDialog(
                     onValueChange = { if (it.all { char -> char.isDigit() }) consumeAmount = it },
                     label = { Text(stringResource(R.string.amount_to_consume)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    isError = consumeAmount.isNotEmpty() && (consumeAmount.toIntOrNull() ?: 0) > item.quantity,
+                    isError = consumeAmount.isNotEmpty() && ((consumeAmount.toIntOrNull() ?: 0) > item.quantity),
                     singleLine = true
                 )
             }
@@ -467,7 +465,7 @@ fun ConsumeDialog(
             TextButton(
                 onClick = {
                     val amount = consumeAmount.toIntOrNull() ?: 0
-                    if (amount > 0 && amount <= item.quantity) {
+                    if ((amount > 0) && (amount <= item.quantity)) {
                         onConfirm(amount)
                     }
                 }
