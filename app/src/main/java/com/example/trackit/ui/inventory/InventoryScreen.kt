@@ -77,23 +77,23 @@ fun InventoryScreenContent(
     onNavigateToAddItem: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var isSearchActive by rememberSaveable { mutableStateOf(value = false) }
+    val isSearchActiveState = rememberSaveable { mutableStateOf(value = false) }
 
-    var itemToConsumeId by rememberSaveable { mutableStateOf<Int?>(null) }
-    var itemToEditId by rememberSaveable { mutableStateOf<Int?>(null) }
+    val itemToConsumeIdState = rememberSaveable { mutableStateOf<Int?>(null) }
+    val itemToEditIdState = rememberSaveable { mutableStateOf<Int?>(null) }
     
     var selectedItems by rememberSaveable { mutableStateOf(setOf<Int>()) }
     val isInSelectionMode by remember { derivedStateOf { selectedItems.isNotEmpty() } }
 
     Scaffold(
         topBar = {
-            if (isSearchActive) {
+            if (isSearchActiveState.value) {
                 SearchTopBar(
                     searchQuery = searchQuery,
                     onSearchQueryChange = onSearchQueryChange,
                 ) {
                     onSearchQueryChange("")
-                    isSearchActive = false
+                    isSearchActiveState.value = false
                 }
             } else {
                 TopAppBar(
@@ -121,7 +121,7 @@ fun InventoryScreenContent(
                                 Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete_selected))
                             }
                         } else {
-                            IconButton(onClick = { isSearchActive = true }) {
+                            IconButton(onClick = { isSearchActiveState.value = true }) {
                                 Icon(Icons.Default.Search, contentDescription = stringResource(R.string.search))
                             }
                         }
@@ -162,36 +162,36 @@ fun InventoryScreenContent(
                 }
             },
             onDelete = { onDeleteItem(it) },
-            onConsume = { itemToConsumeId = it.id },
-            onEdit = { itemToEditId = it.id },
+            onConsume = { itemToConsumeIdState.value = it.id },
+            onEdit = { itemToEditIdState.value = it.id },
             modifier = modifier.padding(innerPadding)
         )
 
-        itemToConsumeId?.let { id ->
+        itemToConsumeIdState.value?.let { id ->
             uiState.itemList.find { it.id == id }?.let { item ->
                 ConsumeDialog(
                     item = item,
-                    onDismiss = { itemToConsumeId = null },
+                    onDismiss = { itemToConsumeIdState.value = null },
                 ) { amount ->
                     onConsumeItem(item, amount)
-                    itemToConsumeId = null
+                    itemToConsumeIdState.value = null
                 }
-            } ?: run { itemToConsumeId = null }
+            } ?: run { itemToConsumeIdState.value = null }
         }
 
-        itemToEditId?.let { id ->
+        itemToEditIdState.value?.let { id ->
             uiState.itemList.find { it.id == id }?.let { item ->
                 EditItemDialog(
                     item = item,
-                    onDismiss = { itemToEditId = null },
+                    onDismiss = { itemToEditIdState.value = null },
                     onConfirm = { updatedItem ->
                         onUpdateItem(updatedItem)
-                        itemToEditId = null
+                        itemToEditIdState.value = null
                     },
                     categoryList = categoryList,
                     locationList = locationList
                 )
-            } ?: run { itemToEditId = null }
+            } ?: run { itemToEditIdState.value = null }
         }
     }
 }
@@ -266,25 +266,25 @@ fun EditItemDialog(
     var quantity by rememberSaveable { mutableStateOf(item.quantity.toString()) }
     var expiryDate by rememberSaveable { mutableStateOf(item.expiryDate) }
     
-    var expanded by rememberSaveable { mutableStateOf(value = false) }
-    var locationExpanded by rememberSaveable { mutableStateOf(value = false) }
+    val expandedState = rememberSaveable { mutableStateOf(value = false) }
+    val locationExpandedState = rememberSaveable { mutableStateOf(value = false) }
     
-    var showDatePicker by rememberSaveable { mutableStateOf(value = false) }
+    val showDatePickerState = rememberSaveable { mutableStateOf(value = false) }
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = item.expiryDate)
 
-    if (showDatePicker) {
+    if (showDatePickerState.value) {
         DatePickerDialog(
-            onDismissRequest = onDismiss,
+            onDismissRequest = { showDatePickerState.value = false },
             confirmButton = {
                 TextButton(onClick = {
                     expiryDate = datePickerState.selectedDateMillis
-                    showDatePicker = false
+                    showDatePickerState.value = false
                 }) {
                     Text(stringResource(android.R.string.ok))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
+                TextButton(onClick = { showDatePickerState.value = false }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -315,8 +315,8 @@ fun EditItemDialog(
                 )
                 
                 ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = !expanded },
+                    expanded = expandedState.value,
+                    onExpandedChange = { expandedState.value = !expandedState.value },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     OutlinedTextField(
@@ -324,22 +324,22 @@ fun EditItemDialog(
                         onValueChange = {},
                         readOnly = true,
                         label = { Text(stringResource(R.string.category)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedState.value) },
                         modifier = Modifier
                             .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                             .fillMaxWidth(),
                         colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
                     )
                     ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
+                        expanded = expandedState.value,
+                        onDismissRequest = { expandedState.value = false }
                     ) {
                         categoryList.forEach { categoryItem ->
                             DropdownMenuItem(
                                 text = { Text(categoryItem.name) },
                                 onClick = {
                                     category = categoryItem.name
-                                    expanded = false
+                                    expandedState.value = false
                                 }
                             )
                         }
@@ -347,15 +347,15 @@ fun EditItemDialog(
                 }
 
                 ExposedDropdownMenuBox(
-                    expanded = locationExpanded,
-                    onExpandedChange = { locationExpanded = !locationExpanded },
+                    expanded = locationExpandedState.value,
+                    onExpandedChange = { locationExpandedState.value = !locationExpandedState.value },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     OutlinedTextField(
                         value = location,
                         onValueChange = { location = it },
                         label = { Text(stringResource(R.string.location)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = locationExpanded) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = locationExpandedState.value) },
                         modifier = Modifier
                             .menuAnchor(MenuAnchorType.PrimaryEditable)
                             .fillMaxWidth(),
@@ -368,15 +368,15 @@ fun EditItemDialog(
                     
                     if (filteredOptions.isNotEmpty()) {
                         ExposedDropdownMenu(
-                            expanded = locationExpanded,
-                            onDismissRequest = { locationExpanded = false }
+                            expanded = locationExpandedState.value,
+                            onDismissRequest = { locationExpandedState.value = false }
                         ) {
                             filteredOptions.forEach { locationItem ->
                                 DropdownMenuItem(
                                     text = { Text(locationItem.name) },
                                     onClick = {
                                         location = locationItem.name
-                                        locationExpanded = false
+                                        locationExpandedState.value = false
                                     }
                                 )
                             }
@@ -394,10 +394,10 @@ fun EditItemDialog(
                     readOnly = true,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { showDatePicker = true },
+                        .clickable { showDatePickerState.value = true },
                     enabled = true,
                     trailingIcon = {
-                        IconButton(onClick = { showDatePicker = true }) {
+                        IconButton(onClick = { showDatePickerState.value = true }) {
                             Icon(Icons.Default.CalendarToday, contentDescription = stringResource(R.string.select_date))
                         }
                     },

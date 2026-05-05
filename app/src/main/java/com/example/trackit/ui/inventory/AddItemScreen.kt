@@ -70,34 +70,34 @@ fun AddItemScreen(
     }
 
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
-    var showCamera by rememberSaveable { mutableStateOf(value = false) }
+    val showCameraState = rememberSaveable { mutableStateOf(value = false) }
     
-    var showDatePicker by rememberSaveable { mutableStateOf(value = false) }
+    val showDatePickerState = rememberSaveable { mutableStateOf(value = false) }
     val datePickerState = rememberDatePickerState()
     var expiryDateLabel by rememberSaveable { mutableStateOf("") }
     val defaultExpiryLabel = stringResource(R.string.select_date)
 
-    var nameExpanded by rememberSaveable { mutableStateOf(value = false) }
-    var expanded by rememberSaveable { mutableStateOf(value = false) }
-    var locationExpanded by rememberSaveable { mutableStateOf(value = false) }
-    var showAddCategoryDialog by rememberSaveable { mutableStateOf(value = false) }
-    var showAddLocationDialog by rememberSaveable { mutableStateOf(value = false) }
+    val nameExpandedState = rememberSaveable { mutableStateOf(value = false) }
+    val expandedState = rememberSaveable { mutableStateOf(value = false) }
+    val locationExpandedState = rememberSaveable { mutableStateOf(value = false) }
+    val showAddCategoryDialogState = rememberSaveable { mutableStateOf(value = false) }
+    val showAddLocationDialogState = rememberSaveable { mutableStateOf(value = false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
         if (isGranted) {
-            showCamera = true
+            showCameraState.value = true
         }
     }
 
-    if (showDatePicker) {
+    if (showDatePickerState.value) {
         DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
+            onDismissRequest = { showDatePickerState.value = false },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        showDatePicker = false
+                        showDatePickerState.value = false
                         datePickerState.selectedDateMillis?.let {
                             val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                             expiryDateLabel = sdf.format(Date(it))
@@ -108,7 +108,7 @@ fun AddItemScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
+                TextButton(onClick = { showDatePickerState.value = false }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -117,10 +117,10 @@ fun AddItemScreen(
         }
     }
 
-    if (showAddCategoryDialog) {
+    if (showAddCategoryDialogState.value) {
         var newCategoryName by rememberSaveable { mutableStateOf("") }
         AlertDialog(
-            onDismissRequest = { showAddCategoryDialog = false },
+            onDismissRequest = { showAddCategoryDialogState.value = false },
             title = { Text(stringResource(R.string.add_category)) },
             text = {
                 OutlinedTextField(
@@ -137,7 +137,7 @@ fun AddItemScreen(
                         if (newCategoryName.isNotBlank()) {
                             viewModel.addCategory(newCategoryName)
                             category = newCategoryName
-                            showAddCategoryDialog = false
+                            showAddCategoryDialogState.value = false
                         }
                     }
                 ) {
@@ -145,17 +145,17 @@ fun AddItemScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showAddCategoryDialog = false }) {
+                TextButton(onClick = { showAddCategoryDialogState.value = false }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
         )
     }
 
-    if (showAddLocationDialog) {
+    if (showAddLocationDialogState.value) {
         var newLocationName by rememberSaveable { mutableStateOf("") }
         AlertDialog(
-            onDismissRequest = { showAddLocationDialog = false },
+            onDismissRequest = { showAddLocationDialogState.value = false },
             title = { Text(stringResource(R.string.add_location)) },
             text = {
                 OutlinedTextField(
@@ -172,7 +172,7 @@ fun AddItemScreen(
                         if (newLocationName.isNotBlank()) {
                             viewModel.addLocation(newLocationName)
                             location = newLocationName
-                            showAddLocationDialog = false
+                            showAddLocationDialogState.value = false
                         }
                     }
                 ) {
@@ -180,7 +180,7 @@ fun AddItemScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showAddLocationDialog = false }) {
+                TextButton(onClick = { showAddLocationDialogState.value = false }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -199,14 +199,14 @@ fun AddItemScreen(
             )
         }
     ) { innerPadding ->
-        if (showCamera) {
+        if (showCameraState.value) {
             CameraView(
                 onImageCaptured = { uri ->
                     imageUri = uri
-                    showCamera = false
+                    showCameraState.value = false
                 },
-                onClose = { showCamera = false },
-                onError = { /* Handle error */ },
+                onClose = { showCameraState.value = false },
+                onError = { showCameraState.value = false },
                 modifier = Modifier.padding(innerPadding)
             )
         } else {
@@ -238,7 +238,7 @@ fun AddItemScreen(
                             onClick = {
                                 val permissionCheckResult = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
                                 if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
-                                    showCamera = true
+                                    showCameraState.value = true
                                 } else {
                                     permissionLauncher.launch(Manifest.permission.CAMERA)
                                 }
@@ -252,15 +252,15 @@ fun AddItemScreen(
                 }
 
                 ExposedDropdownMenuBox(
-                    expanded = nameExpanded,
-                    onExpandedChange = { nameExpanded = !nameExpanded },
+                    expanded = nameExpandedState.value,
+                    onExpandedChange = { nameExpandedState.value = !nameExpandedState.value },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     OutlinedTextField(
                         value = name,
                         onValueChange = {
                             name = it
-                            nameExpanded = it.isNotBlank()
+                            nameExpandedState.value = it.isNotBlank()
                         },
                         label = { Text(stringResource(R.string.item_name)) },
                         modifier = Modifier
@@ -275,8 +275,8 @@ fun AddItemScreen(
 
                     if (filteredItems.isNotEmpty() && name.isNotBlank()) {
                         ExposedDropdownMenu(
-                            expanded = nameExpanded,
-                            onDismissRequest = { nameExpanded = false }
+                            expanded = nameExpandedState.value,
+                            onDismissRequest = { nameExpandedState.value = false }
                         ) {
                             filteredItems.forEach { item ->
                                 DropdownMenuItem(
@@ -295,7 +295,7 @@ fun AddItemScreen(
                                     onClick = {
                                         name = item.name
                                         item.category?.let { category = it }
-                                        nameExpanded = false
+                                        nameExpandedState.value = false
                                     }
                                 )
                             }
@@ -318,8 +318,8 @@ fun AddItemScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = !expanded },
+                        expanded = expandedState.value,
+                        onExpandedChange = { expandedState.value = !expandedState.value },
                         modifier = Modifier.weight(1f)
                     ) {
                         OutlinedTextField(
@@ -327,20 +327,20 @@ fun AddItemScreen(
                             onValueChange = {},
                             readOnly = true,
                             label = { Text(stringResource(R.string.category)) },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedState.value) },
                             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
                             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
                         )
                         ExposedDropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
+                            expanded = expandedState.value,
+                            onDismissRequest = { expandedState.value = false }
                         ) {
                             categoryList.forEach { categoryItem ->
                                 DropdownMenuItem(
                                     text = { Text(categoryItem.name) },
                                     onClick = {
                                         category = categoryItem.name
-                                        expanded = false
+                                        expandedState.value = false
                                     }
                                 )
                             }
@@ -348,7 +348,7 @@ fun AddItemScreen(
                     }
                     
                     IconButton(
-                        onClick = { showAddCategoryDialog = true },
+                        onClick = { showAddCategoryDialogState.value = true },
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
                         Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_category))
@@ -360,15 +360,15 @@ fun AddItemScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     ExposedDropdownMenuBox(
-                        expanded = locationExpanded,
-                        onExpandedChange = { locationExpanded = !locationExpanded },
+                        expanded = locationExpandedState.value,
+                        onExpandedChange = { locationExpandedState.value = !locationExpandedState.value },
                         modifier = Modifier.weight(1f)
                     ) {
                         OutlinedTextField(
                             value = location,
                             onValueChange = { location = it },
                             label = { Text(stringResource(R.string.location)) },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = locationExpanded) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = locationExpandedState.value) },
                             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryEditable).fillMaxWidth(),
                             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
                         )
@@ -379,15 +379,15 @@ fun AddItemScreen(
                         
                         if (filteredOptions.isNotEmpty()) {
                             ExposedDropdownMenu(
-                                expanded = locationExpanded,
-                                onDismissRequest = { locationExpanded = false }
+                                expanded = locationExpandedState.value,
+                                onDismissRequest = { locationExpandedState.value = false }
                             ) {
                                 filteredOptions.forEach { locationItem ->
                                     DropdownMenuItem(
                                         text = { Text(locationItem.name) },
                                         onClick = {
                                             location = locationItem.name
-                                            locationExpanded = false
+                                            locationExpandedState.value = false
                                         }
                                     )
                                 }
@@ -396,7 +396,7 @@ fun AddItemScreen(
                     }
                     
                     IconButton(
-                        onClick = { showAddLocationDialog = true },
+                        onClick = { showAddLocationDialogState.value = true },
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
                         Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_location))
@@ -409,11 +409,11 @@ fun AddItemScreen(
                     label = { Text(stringResource(R.string.expiry_date)) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { showDatePicker = true },
+                        .clickable { showDatePickerState.value = true },
                     enabled = true,
                     readOnly = true,
                     trailingIcon = {
-                        IconButton(onClick = { showDatePicker = true }) {
+                        IconButton(onClick = { showDatePickerState.value = true }) {
                             Icon(Icons.Default.CalendarToday, contentDescription = stringResource(R.string.select_date))
                         }
                     },
@@ -476,21 +476,24 @@ fun CameraView(
                         val previewView = PreviewView(ctx).apply {
                             scaleType = PreviewView.ScaleType.FILL_CENTER
                         }
-                        cameraProviderFuture.addListener({
-                            val cameraProvider = cameraProviderFuture.get()
-                            try {
-                                cameraProvider.unbindAll()
-                                cameraProvider.bindToLifecycle(
-                                    lifecycleOwner,
-                                    cameraSelector,
-                                    preview,
-                                    imageCapture
-                                )
-                                preview.surfaceProvider = previewView.surfaceProvider
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
-                        }, ContextCompat.getMainExecutor(ctx))
+                        cameraProviderFuture.addListener(
+                            {
+                                val cameraProvider = cameraProviderFuture.get()
+                                try {
+                                    cameraProvider.unbindAll()
+                                    cameraProvider.bindToLifecycle(
+                                        lifecycleOwner,
+                                        cameraSelector,
+                                        preview,
+                                        imageCapture
+                                    )
+                                    preview.surfaceProvider = previewView.surfaceProvider
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                            },
+                            ContextCompat.getMainExecutor(ctx),
+                        )
                         previewView
                     },
                     modifier = Modifier.fillMaxSize()

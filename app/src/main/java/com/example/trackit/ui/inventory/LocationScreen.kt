@@ -95,7 +95,6 @@ fun LocationScreen(
             AlertDialog(
                 onDismissRequest = { 
                     showAddLocationDialog = false
-                    preselectedParentForAdd = null
                 },
                 title = { Text(stringResource(R.string.add_location)) },
                 text = {
@@ -170,10 +169,10 @@ fun LocationScreen(
 
 @Composable
 fun LocationList(
-    modifier: Modifier = Modifier,
     locations: List<Location>,
     onAddSublocation: (Location) -> Unit,
     onDeleteLocation: (Location) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     if (locations.isEmpty()) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -229,12 +228,12 @@ fun LocationList(
 @Composable
 fun LocationItem(
     location: Location,
+    modifier: Modifier = Modifier,
     isExpanded: Boolean = false,
     hasSublocations: Boolean = false,
     onClick: () -> Unit = {},
     onAddClick: (() -> Unit)? = null,
     onDeleteClick: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
