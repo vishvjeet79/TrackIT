@@ -16,6 +16,20 @@
 # debugging stack traces.
 #-keepattributes SourceFile,LineNumberTable
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Room
+-keepclassmembers class * extends androidx.room.RoomDatabase {
+   public <init>(...);
+}
+-keep class * extends androidx.room.RoomDatabase
+-dontwarn androidx.room.paging.**
+
+# Moshi
+-keep class com.squareup.moshi.** { *; }
+-keep @com.squareup.moshi.JsonQualifier interface *
+-keepclassmembers class * {
+    @com.squareup.moshi.FromJson *;
+    @com.squareup.moshi.ToJson *;
+}
+
+# Keep Data Classes from being obfuscated (important for Room/Moshi)
+-keep class com.example.trackit.data.** { *; }

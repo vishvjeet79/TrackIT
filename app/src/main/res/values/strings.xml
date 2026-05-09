@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">TrackIT</string>
     <string name="inventory_title">TrackIT Inventory</string>
@@ -37,4 +38,5 @@
     <string name="back">Back</string>
     <string name="clear">Clear</string>
     <string name="no_expiry">No expiry date</string>
+    <string name="dark_mode">Dark Mode</string>
 </resources>

@@ -1,15 +1,10 @@
 package com.example.trackit.ui.inventory
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.view.PreviewView
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -26,21 +21,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.trackit.R
+import com.example.trackit.data.Category
+import com.example.trackit.data.InventoryItem
+import com.example.trackit.data.Location
 import com.example.trackit.ui.AppViewModelProvider
-import java.io.File
+import com.example.trackit.ui.components.CameraView
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.Executor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +44,54 @@ fun AddItemScreen(
     navigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    viewModel: InventoryViewModel? = null,
+) {
+    if (LocalInspectionMode.current && viewModel == null) {
+        AddItemContent(
+            categoryList = emptyList(),
+            locationList = emptyList(),
+            allItems = emptyList(),
+            onAddItem = { _, _, _, _, _, _ -> },
+            onAddCategory = {},
+            onAddLocation = {},
+            navigateBack = navigateBack,
+            onNavigateUp = onNavigateUp,
+            modifier = modifier
+        )
+    } else {
+        val actualViewModel: InventoryViewModel = viewModel ?: viewModel(factory = AppViewModelProvider.Factory)
+        val categoryList by actualViewModel.categories.collectAsStateWithLifecycle()
+        val locationList by actualViewModel.locations.collectAsStateWithLifecycle()
+        val allItems by actualViewModel.allItems.collectAsStateWithLifecycle()
+
+        AddItemContent(
+            categoryList = categoryList,
+            locationList = locationList,
+            allItems = allItems,
+            onAddItem = { name, qty, path, loc, cat, date ->
+                actualViewModel.addItem(name, qty, path, loc, cat, date)
+            },
+            onAddCategory = { actualViewModel.addCategory(it) },
+            onAddLocation = { actualViewModel.addLocation(it) },
+            navigateBack = navigateBack,
+            onNavigateUp = onNavigateUp,
+            modifier = modifier
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddItemContent(
+    categoryList: List<Category>,
+    locationList: List<Location>,
+    allItems: List<InventoryItem>,
+    onAddItem: (String, Int, String?, String?, String?, Long?) -> Unit,
+    onAddCategory: (String) -> Unit,
+    onAddLocation: (String) -> Unit,
+    navigateBack: () -> Unit,
+    onNavigateUp: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     
@@ -56,11 +99,7 @@ fun AddItemScreen(
     var quantity by rememberSaveable { mutableStateOf("") }
     var location by rememberSaveable { mutableStateOf("") }
     
-    val categoryList by viewModel.categories.collectAsStateWithLifecycle()
     var category by rememberSaveable { mutableStateOf("") }
-    
-    val locationList by viewModel.locations.collectAsStateWithLifecycle()
-    val allItems by viewModel.allItems.collectAsStateWithLifecycle()
     
     // Set default category once categories are loaded
     LaunchedEffect(categoryList) {
@@ -135,7 +174,7 @@ fun AddItemScreen(
                 TextButton(
                     onClick = {
                         if (newCategoryName.isNotBlank()) {
-                            viewModel.addCategory(newCategoryName)
+                            onAddCategory(newCategoryName)
                             category = newCategoryName
                             showAddCategoryDialogState.value = false
                         }
@@ -170,7 +209,7 @@ fun AddItemScreen(
                 TextButton(
                     onClick = {
                         if (newLocationName.isNotBlank()) {
-                            viewModel.addLocation(newLocationName)
+                            onAddLocation(newLocationName)
                             location = newLocationName
                             showAddLocationDialogState.value = false
                         }
@@ -283,18 +322,28 @@ fun AddItemScreen(
                                     text = {
                                         Column {
                                             Text(item.name)
-                                            item.category?.let {
-                                                Text(
-                                                    text = it,
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
+                                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                item.category?.let {
+                                                    Text(
+                                                        text = it,
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                }
+                                                item.location?.let {
+                                                    Text(
+                                                        text = "• $it",
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                }
                                             }
                                         }
                                     },
                                     onClick = {
                                         name = item.name
                                         item.category?.let { category = it }
+                                        item.location?.let { location = it }
                                         nameExpandedState.value = false
                                     }
                                 )
@@ -426,13 +475,13 @@ fun AddItemScreen(
 
                 Button(
                     onClick = {
-                        viewModel.addItem(
-                            name = name,
-                            quantity = quantity.toIntOrNull() ?: 0,
-                            imagePath = imageUri?.toString(),
-                            location = location.ifBlank { null },
-                            category = category,
-                            expiryDate = datePickerState.selectedDateMillis
+                        onAddItem(
+                            name,
+                            quantity.toIntOrNull() ?: 0,
+                            imageUri?.toString(),
+                            location.ifBlank { null },
+                            category,
+                            datePickerState.selectedDateMillis
                         )
                         navigateBack()
                     },
@@ -444,125 +493,4 @@ fun AddItemScreen(
             }
         }
     }
-}
-
-@Composable
-fun CameraView(
-    onImageCaptured: (Uri) -> Unit,
-    onClose: () -> Unit,
-    onError: (ImageCaptureException) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val cameraProviderFuture = remember { androidx.camera.lifecycle.ProcessCameraProvider.getInstance(context) }
-    val imageCapture = remember { ImageCapture.Builder().build() }
-    val preview = androidx.camera.core.Preview.Builder().build()
-    val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-    Box(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-            ) {
-                AndroidView(
-                    factory = { ctx ->
-                        val previewView = PreviewView(ctx).apply {
-                            scaleType = PreviewView.ScaleType.FILL_CENTER
-                        }
-                        cameraProviderFuture.addListener(
-                            {
-                                val cameraProvider = cameraProviderFuture.get()
-                                try {
-                                    cameraProvider.unbindAll()
-                                    cameraProvider.bindToLifecycle(
-                                        lifecycleOwner,
-                                        cameraSelector,
-                                        preview,
-                                        imageCapture
-                                    )
-                                    preview.surfaceProvider = previewView.surfaceProvider
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                }
-                            },
-                            ContextCompat.getMainExecutor(ctx),
-                        )
-                        previewView
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            IconButton(
-                onClick = {
-                    takePhoto(
-                        imageCapture = imageCapture,
-                        context = context,
-                        executor = ContextCompat.getMainExecutor(context),
-                        onImageCaptured = onImageCaptured,
-                        onError = onError
-                    )
-                },
-                modifier = Modifier.size(72.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PhotoCamera,
-                    contentDescription = stringResource(R.string.take_photo),
-                    modifier = Modifier.size(48.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-        
-        IconButton(
-            onClick = onClose,
-            modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.back),
-                tint = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-private fun takePhoto(
-    imageCapture: ImageCapture,
-    context: Context,
-    executor: Executor,
-    onImageCaptured: (Uri) -> Unit,
-    onError: (ImageCaptureException) -> Unit
-) {
-    val outputDirectory = context.cacheDir
-    val photoFile = File(
-        outputDirectory,
-        SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US).format(System.currentTimeMillis()) + ".jpg"
-    )
-
-    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
-    imageCapture.takePicture(
-        outputOptions,
-        executor,
-        object : ImageCapture.OnImageSavedCallback {
-            override fun onError(exception: ImageCaptureException) {
-                onError(exception)
-            }
-
-            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                val savedUri = Uri.fromFile(photoFile)
-                onImageCaptured(savedUri)
-            }
-        }
-    )
 }

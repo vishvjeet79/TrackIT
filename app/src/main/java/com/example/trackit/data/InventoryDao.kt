@@ -26,7 +26,7 @@ interface InventoryDao {
     @Query("SELECT * FROM locations")
     fun getAllLocations(): Flow<List<Location>>
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLocation(location: Location)
 
     @Delete

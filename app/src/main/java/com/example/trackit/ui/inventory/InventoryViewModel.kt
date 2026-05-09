@@ -117,9 +117,9 @@ class InventoryViewModel(private val repository: InventoryRepository) : ViewMode
         }
     }
 
-    fun addLocation(locationName: String, parentName: String? = null) {
+    fun addLocation(locationName: String, parentName: String? = null, imagePath: String? = null) {
         viewModelScope.launch {
-            repository.insertLocation(Location(name = locationName, parentName = parentName))
+            repository.insertLocation(Location(name = locationName, parentName = parentName, imagePath = imagePath))
         }
     }
 

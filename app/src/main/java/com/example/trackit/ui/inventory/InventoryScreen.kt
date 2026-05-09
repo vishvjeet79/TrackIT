@@ -18,6 +18,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -25,6 +26,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import com.example.trackit.ui.TourStep
+import com.example.trackit.ui.components.GuidedTourBubble
 import coil.compose.AsyncImage
 import com.example.trackit.R
 import com.example.trackit.data.Category
@@ -40,26 +45,49 @@ import java.util.*
 fun InventoryScreen(
     onNavigateToAddItem: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    viewModel: InventoryViewModel? = null,
+    tourStep: TourStep? = null,
+    onNextStep: () -> Unit = {},
+    onSkipTour: () -> Unit = {}
 ) {
-    val uiState by viewModel.inventoryUiState.collectAsStateWithLifecycle()
-    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
-    val categoryList by viewModel.categories.collectAsStateWithLifecycle()
-    val locationList by viewModel.locations.collectAsStateWithLifecycle()
-    
-    InventoryScreenContent(
-        uiState = uiState,
-        searchQuery = searchQuery,
-        categoryList = categoryList,
-        locationList = locationList,
-        onSearchQueryChange = viewModel::onSearchQueryChange,
-        onDeleteItem = viewModel::deleteItem,
-        onDeleteItems = viewModel::deleteItems,
-        onConsumeItem = viewModel::consumeItem,
-        onUpdateItem = viewModel::updateItem,
-        onNavigateToAddItem = onNavigateToAddItem,
-        modifier = modifier,
-    )
+    if (LocalInspectionMode.current && viewModel == null) {
+        InventoryScreenContent(
+            uiState = InventoryUiState(),
+            searchQuery = "",
+            categoryList = emptyList(),
+            locationList = emptyList(),
+            onSearchQueryChange = {},
+            onDeleteItem = {},
+            onDeleteItems = {},
+            onConsumeItem = { _, _ -> },
+            onUpdateItem = {},
+            onNavigateToAddItem = onNavigateToAddItem,
+            modifier = modifier,
+        )
+    } else {
+        val actualViewModel: InventoryViewModel = viewModel ?: viewModel(factory = AppViewModelProvider.Factory)
+        val uiState by actualViewModel.inventoryUiState.collectAsStateWithLifecycle()
+        val searchQuery by actualViewModel.searchQuery.collectAsStateWithLifecycle()
+        val categoryList by actualViewModel.categories.collectAsStateWithLifecycle()
+        val locationList by actualViewModel.locations.collectAsStateWithLifecycle()
+
+        InventoryScreenContent(
+            uiState = uiState,
+            searchQuery = searchQuery,
+            categoryList = categoryList,
+            locationList = locationList,
+            onSearchQueryChange = actualViewModel::onSearchQueryChange,
+            onDeleteItem = actualViewModel::deleteItem,
+            onDeleteItems = actualViewModel::deleteItems,
+            onConsumeItem = actualViewModel::consumeItem,
+            onUpdateItem = actualViewModel::updateItem,
+            onNavigateToAddItem = onNavigateToAddItem,
+            tourStep = tourStep,
+            onNextStep = onNextStep,
+            onSkipTour = onSkipTour,
+            modifier = modifier,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,6 +103,9 @@ fun InventoryScreenContent(
     onConsumeItem: (InventoryItem, Int) -> Unit,
     onUpdateItem: (InventoryItem) -> Unit,
     onNavigateToAddItem: () -> Unit,
+    tourStep: TourStep? = null,
+    onNextStep: () -> Unit = {},
+    onSkipTour: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val isSearchActiveState = rememberSaveable { mutableStateOf(value = false) }
@@ -84,6 +115,9 @@ fun InventoryScreenContent(
     
     var selectedItems by rememberSaveable { mutableStateOf(setOf<Int>()) }
     val isInSelectionMode by remember { derivedStateOf { selectedItems.isNotEmpty() } }
+
+    var fabCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var bodyCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     Scaffold(
         topBar = {
@@ -134,7 +168,9 @@ fun InventoryScreenContent(
                 FloatingActionButton(
                     onClick = onNavigateToAddItem,
                     shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.padding(20.dp)
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .onGloballyPositioned { fabCoordinates = it }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
@@ -164,8 +200,26 @@ fun InventoryScreenContent(
             onDelete = { onDeleteItem(it) },
             onConsume = { itemToConsumeIdState.value = it.id },
             onEdit = { itemToEditIdState.value = it.id },
-            modifier = modifier.padding(innerPadding)
+            modifier = modifier
+                .padding(innerPadding)
+                .onGloballyPositioned { bodyCoordinates = it }
         )
+
+        if (tourStep == TourStep.INVENTORY_OVERVIEW) {
+            GuidedTourBubble(
+                text = "Welcome to your Inventory! All your tracked items will appear here.",
+                onNext = onNextStep,
+                onSkip = onSkipTour,
+                targetCoordinates = bodyCoordinates
+            )
+        } else if (tourStep == TourStep.ADD_ITEM) {
+            GuidedTourBubble(
+                text = "Tap here to add a new item to your collection.",
+                onNext = onNextStep,
+                onSkip = onSkipTour,
+                targetCoordinates = fabCoordinates
+            )
+        }
 
         itemToConsumeIdState.value?.let { id ->
             uiState.itemList.find { it.id == id }?.let { item ->

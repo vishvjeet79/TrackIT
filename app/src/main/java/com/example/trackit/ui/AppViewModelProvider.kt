@@ -12,6 +12,12 @@ object AppViewModelProvider {
         initializer {
             InventoryViewModel(trackItApplication().repository)
         }
+        initializer {
+            SettingsViewModel(trackItApplication().userPreferencesRepository)
+        }
+        initializer {
+            TourViewModel(trackItApplication().userPreferencesRepository)
+        }
     }
 }
 

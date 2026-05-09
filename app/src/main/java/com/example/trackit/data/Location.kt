@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class Location(
     @PrimaryKey
     val name: String,
-    val parentName: String? = null
+    val parentName: String? = null,
+    val imagePath: String? = null,
 )
