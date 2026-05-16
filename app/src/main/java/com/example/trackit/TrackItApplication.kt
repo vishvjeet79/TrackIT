@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.trackit.data.InventoryDatabase
 import com.example.trackit.data.InventoryRepository
+import com.example.trackit.data.LocalSyncManager
 import com.example.trackit.data.UserPreferencesRepository
 
 private const val LAYOUT_PREFERENCE_NAME = "user_preferences"
@@ -19,5 +20,8 @@ class TrackItApplication : Application() {
     val repository: InventoryRepository by lazy { InventoryRepository(database.inventoryDao()) }
     val userPreferencesRepository: UserPreferencesRepository by lazy {
         UserPreferencesRepository(dataStore)
+    }
+    val localSyncManager: LocalSyncManager by lazy {
+        LocalSyncManager(this)
     }
 }

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="@string/settings_title" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/dark_mode_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="@string/dark_mode"
+        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/divider1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/dark_mode_switch" />
+
+    <TextView
+        android:id="@+id/data_mgmt_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="Data Management"
+        android:textAppearance="?attr/textAppearanceTitleMedium"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider1" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/export_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Export Inventory"
+        app:icon="@drawable/ic_upload"
+        app:layout_constraintTop_toBottomOf="@id/data_mgmt_title"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.TrackIT.Input" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/import_btn"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp"
+        android:text="Import Inventory"
+        app:icon="@drawable/ic_download"
+        app:layout_constraintTop_toBottomOf="@id/export_btn"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.TrackIT.Input" />
+
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/divider2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/import_btn" />
+
+    <TextView
+        android:id="@+id/sync_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="Nearby Sync"
+        android:textAppearance="?attr/textAppearanceTitleMedium"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider2" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/sync_host_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Enable Nearby Visibility"
+        app:layout_constraintTop_toBottomOf="@id/sync_title" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/peers_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sync_host_btn" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

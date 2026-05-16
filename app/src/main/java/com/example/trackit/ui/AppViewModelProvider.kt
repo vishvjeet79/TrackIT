@@ -13,7 +13,11 @@ object AppViewModelProvider {
             InventoryViewModel(trackItApplication().repository)
         }
         initializer {
-            SettingsViewModel(trackItApplication().userPreferencesRepository)
+            SettingsViewModel(
+                trackItApplication().userPreferencesRepository,
+                trackItApplication().repository,
+                trackItApplication().localSyncManager
+            )
         }
         initializer {
             TourViewModel(trackItApplication().userPreferencesRepository)

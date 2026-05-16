@@ -39,4 +39,10 @@
     <string name="clear">Clear</string>
     <string name="no_expiry">No expiry date</string>
     <string name="dark_mode">Dark Mode</string>
+    <string name="import_inventory">Import Inventory</string>
+    <string name="import_options_message">Do you want to merge the imported items with your current inventory, or completely replace your current items?</string>
+    <string name="replace_existing">Replace Existing</string>
+    <string name="merge">Merge</string>
+    <string name="inventory_replaced">Inventory replaced successfully</string>
+    <string name="inventory_merged">Inventory merged successfully</string>
 </resources>

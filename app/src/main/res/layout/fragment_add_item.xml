@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Item"
+            android:textColor="@android:color/black"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/name_layout"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:hintEnabled="false"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.TrackIT.Input">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/name_edit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Name"
+                android:padding="16dp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/quantity_layout"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:hintEnabled="false"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.TrackIT.Input">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/quantity_edit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Quantity"
+                android:inputType="number"
+                android:padding="16dp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Category Dropdown -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/category_layout"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:hintEnabled="false"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.TrackIT.Input">
+
+            <AutoCompleteTextView
+                android:id="@+id/category_auto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Category"
+                android:inputType="none"
+                android:padding="16dp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Location Dropdown -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/location_layout"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:hintEnabled="false"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.TrackIT.Input">
+
+            <AutoCompleteTextView
+                android:id="@+id/location_auto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Location"
+                android:padding="16dp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Expiry Date -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/expiry_layout"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:endIconDrawable="@drawable/ic_calendar"
+            app:endIconMode="custom"
+            app:hintEnabled="false"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.TrackIT.Input">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/expiry_edit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Date (dd-mm-yy)"
+                android:inputType="number"
+                android:padding="16dp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageView
+            android:id="@+id/image_preview"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
+
+        <ImageButton
+            android:id="@+id/camera_btn"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_photo_camera" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="end|center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/discard_btn"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Discard"
+                android:textColor="@android:color/darker_gray" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/save_btn"
+                android:layout_width="120dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="16dp"
+                android:backgroundTint="#6200EE"
+                android:text="Save"
+                android:textColor="@android:color/white"
+                app:cornerRadius="24dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

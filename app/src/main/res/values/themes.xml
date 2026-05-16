@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Theme.TrackIT" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:statusBarColor">?attr/colorSurface</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
 
-    <style name="Theme.TrackIT" parent="Theme.MaterialComponents.Light" />
+    <style name="ShapeAppearance.TrackIT.Input" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerSize">12dp</item>
+    </style>
 </resources>
